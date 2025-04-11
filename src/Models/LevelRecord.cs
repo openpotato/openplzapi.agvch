@@ -78,6 +78,7 @@ namespace OpenPlzApi.AGVCH
         /// Dictionary of level information
         /// </summary>
         public IDictionary<string, string> Levels { get; internal set; } = new Dictionary<string, string>();
+        
         /// <summary>
         /// Name (Name der Gemeinde)
         /// </summary>

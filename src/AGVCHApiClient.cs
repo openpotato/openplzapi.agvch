@@ -204,7 +204,7 @@ namespace OpenPlzApi.AGVCH
         }
 
         /// <summary>
-        /// Downloads the raw CSV file with the list of all community-related changes that have taken place during a specified period.
+        /// Downloads the raw CSV file with the list of all commune-related changes that have taken place during a specified period.
         /// </summary>
         /// <param name="startPeriod">Start of the period</param>
         /// <param name="endPeriod">End of the period</param>
@@ -276,7 +276,7 @@ namespace OpenPlzApi.AGVCH
         }
         
         /// <summary>
-        /// Creates an uri builder with the internal base url as strating point
+        /// Creates an uri builder with the internal base url as starting point
         /// </summary>
         /// <returns>A new <see cref="UriBuilder"/> instance</returns>
         private UriBuilder CreateUriBuilder()
