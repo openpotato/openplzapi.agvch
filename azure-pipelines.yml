@@ -11,8 +11,11 @@ stages:
 - stage: BuildAndTest  
   jobs:
   - job: 
+    variables:
+      NUGET_PACKAGES: '$(Pipeline.Workspace)/.nuget/packages'
     steps:
     - checkout: self
+      fetchDepth: 0
       persistCredentials: true
     - task: DownloadSecureFile@1
       displayName: 'Download Client Authentication Certificate'
@@ -34,7 +37,7 @@ stages:
         script: |
           $env:PATH += ';C:\Program Files\DigiCert\DigiCert Keylocker Tools'
           smctl credentials save $(SM_API_KEY) $(SM_CLIENT_CERT_PASSWORD)
-          smctl windows certsync --keypair-alias=$(SM_CERT_ALIAS)
+          smctl windows certsync --keypair-alias=$(SM_KEYPAIR_ALIAS)
         failOnStderr: true
         pwsh: true
     - task: PowerShell@2
@@ -56,6 +59,12 @@ stages:
         InformationalVersion: '$(SemVersion)'
         LogLevel: 'verbose'
         FailOnWarning: false
+    - task: Cache@2
+      displayName: 'Cache NuGet packages'
+      inputs:
+        key: 'nuget | "$(Agent.OS)" | **/*.csproj'
+        restoreKeys: 'nuget | "$(Agent.OS)"'
+        path: $(NUGET_PACKAGES)
     - task: DotNetCoreCLI@2
       displayName: 'Restore'
       inputs:
@@ -68,13 +77,13 @@ stages:
       inputs:
         command: 'build'
         projects: '*.sln'
-        arguments: '-c $(BuildConfiguration)'
+        arguments: '-c $(BuildConfiguration) --no-restore /p:ContinuousIntegrationBuild=true'
     - task: DotNetCoreCLI@2
       displayName: 'Test'
       inputs:
         command: 'test'
         projects: '*.sln'
-        arguments: '-c $(BuildConfiguration)'
+        arguments: '-c $(BuildConfiguration) --no-build'
         testRunTitle: 'Perform unit tests'
     - task: DotNetCoreCLI@2
       displayName: 'Pack'
@@ -82,6 +91,7 @@ stages:
         command: 'pack'
         packagesToPack: 'src/OpenPlzApi.AGVCH.csproj'
         nobuild: true
+        arguments: '/p:ContinuousIntegrationBuild=true'
         versioningScheme: 'byEnvVar'
         versionEnvVar: 'SemVersion'
     - task: NuGetCommand@2
@@ -130,9 +140,24 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
+          $ErrorActionPreference = 'Stop'
+
+          # Configure Git identity
+          git config user.name  "azure-devops-bot"
+          git config user.email "azuredevops@stueber.nomail"
+
+          # Add 'github' remote
           git remote add github https://$(PAT)@github.com/openpotato/openplzapi.agvch.git
-          git fetch github
-          git checkout .
+
+          # Sanity-check divergence so we fail early if GitHub has new commits
+          git fetch github main --prune
+          if ((git rev-parse HEAD) -ne (git merge-base HEAD github/main)) {
+            Write-Error "Refusing to push: local main and github/main have diverged."
+          }
+
+          # Push only the main branch (fast-forward or create remote if missing)
           git push github HEAD:main
-          git push --tags github HEAD:main
+          
+          # Remove the remote so the PAT isn't left in .git/config
+          git remote remove github
         pwsh: true
