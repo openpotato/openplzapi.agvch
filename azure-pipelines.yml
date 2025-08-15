@@ -15,8 +15,6 @@ stages:
       NUGET_PACKAGES: '$(Pipeline.Workspace)/.nuget/packages'
     steps:
     - checkout: self
-      fetchDepth: 0
-      persistCredentials: true
     - task: DownloadSecureFile@1
       displayName: 'Download Client Authentication Certificate'
       name: SM_CLIENT_CERT_FILE
