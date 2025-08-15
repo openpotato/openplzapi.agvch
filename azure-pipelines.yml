@@ -137,7 +137,7 @@ stages:
     - checkout: self
       fetchDepth: 0
     - task: PowerShell@2
-      displayName: 'Push to GitHub (PowerShell)'
+      displayName: 'Push to GitHub'
       inputs:
         targetType: inline
         pwsh: true
