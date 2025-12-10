@@ -5,7 +5,7 @@
 
 A [.NET](https://dotnet.microsoft.com/) client library for direct access to the REST services of the application of the Swiss communes (AGVCH) provided by the [Swiss Federal Statistical Office](https://www.bfs.admin.ch/bfs/en/home.html).
 
-+ Supports .NET 8 and .NET 9
++ Supports .NET 10, .NET 9 and .NET 8
 + Supports the following AGVCH API endpoints:
     + Snapshot of the communes (Snapshot der Gemeinden): `../api/communes/snapshot`
 	+ Mutations of the communes (Mutationen der Gemeinden): `../api/communes/mutations`
